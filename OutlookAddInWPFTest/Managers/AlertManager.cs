@@ -42,6 +42,7 @@ namespace OutlookAddInWPFTest.Managers
                                     {
                                         rect = new System.Drawing.Rectangle(left, top, width, height),
                                     });
+                                    curPos = foundPos + 1;
                                 }
 
                                 return list.ToArray();

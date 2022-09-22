@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using OutlookAddInWPFTest.Enum;
 using OutlookAddInWPFTest.Utils;
 
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace OutlookAddInWPFTest.Managers
 {
@@ -22,10 +16,6 @@ namespace OutlookAddInWPFTest.Managers
 
         public static void Init()
         {
-            //    var dummy = WinAPI.LoadLibrary("kernel32.dll");
-            // var fncptr = Marshal.GetFunctionPointerForDelegate( new WinAPI.HookProc(CBTHook));
-            // var z = GCHandle.Alloc(new WinAPI.HookProc(CBTHook));
-            // var ptr = z.AddrOfPinnedObject();
             if ((_cbtHook = WinAPI.SetWindowsHookEx(WinAPI.HookType.WH_CBT, _cbtProc, IntPtr.Zero, WinAPI.GetCurrentThreadId())) == IntPtr.Zero)
             {
                 throw new Win32Exception(Marshal.GetLastWin32Error());

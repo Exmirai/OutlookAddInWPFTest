@@ -65,8 +65,9 @@ namespace OutlookAddInWPFTest.Forms
                     alert.ProcessClick();
                     rect.Fill = new SolidColorBrush(Colors.Yellow);
                 };
-                var pt = new Point(alert.rect.Left, alert.rect.Top);
-                pt = (Point)this.Dispatcher.Invoke(new ScreenToClient(this.PointFromScreen), DispatcherPriority.Normal, new[] { pt });
+                var pt = new Point(alert.rect.Left, alert.rect.Top); 
+                var obj = this.Dispatcher.Invoke(new ScreenToClient(this.PointFromScreen), DispatcherPriority.Normal, pt);
+                pt = (Point)obj;
                 Canvas.SetLeft(rect, pt.X);
                 Canvas.SetTop(rect, pt.Y);
                 RenderList.Children.Add(rect);
@@ -89,7 +90,8 @@ namespace OutlookAddInWPFTest.Forms
                 }
                 return;
             }
-            UpdateAlertList();
+
+            this.Dispatcher.Invoke(() => UpdateAlertList());
             this.Dispatcher.Invoke(() => this.AttachTo(Utils.OutlookUtils.GetWordWindow(), AttachFlagEnum.OVERLAY));
             this.Dispatcher.Invoke(() => this.Show());
         }

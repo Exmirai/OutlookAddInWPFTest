@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -18,11 +17,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Microsoft.Office.Interop.Outlook;
 using OutlookAddInWPFTest.Enum;
 using OutlookAddInWPFTest.Forms.BaseForm;
 using OutlookAddInWPFTest.Properties;
 using OutlookAddInWPFTest.Utils;
 using SharpVectors.Dom.Events;
+using Application = System.Windows.Application;
+using Exception = System.Exception;
 using Point = System.Windows.Point;
 
 namespace OutlookAddInWPFTest.Forms
@@ -86,19 +88,44 @@ namespace OutlookAddInWPFTest.Forms
             if (e.ChangedButton == MouseButton.Left)
             {
                 this.isMoving = true;
-                this.MouseLeftButtonUp += Overlay_MouseUpHandle;
+                this.MouseLeftButtonUp += JButton_MouseUpHandle;
                 DragMove();
             }
         }
 
-        private void Overlay_MouseUpHandle(object sender, EventArgs args)
+        private void JButton_LocationChanged(object sender, EventArgs e)
+        {
+            var overlayRect = new System.Drawing.Rectangle();
+            Overlay.Instance.Dispatcher.Invoke(() =>
+            {
+                overlayRect = new System.Drawing.Rectangle((int)Overlay.Instance.Left, (int)Overlay.Instance.Top,
+                    (int)Overlay.Instance.Width, (int)Overlay.Instance.Height);
+            });
+            if (this.Left < overlayRect.Left)
+            {
+                this.Left = overlayRect.Left;
+            }else if (this.Left + this.Width > overlayRect.Right)
+            {
+                this.Left = overlayRect.Right - this.Width;
+            }
+
+            if (this.Top < overlayRect.Top)
+            {
+                this.Top = overlayRect.Top;
+            }else if (this.Top + this.Height > overlayRect.Bottom)
+            {
+                this.Top = overlayRect.Bottom - this.Height;
+            }
+        }
+
+        private void JButton_MouseUpHandle(object sender, EventArgs args)
         {
             var rect = new WinAPI.RECT();
            // if (!WinAPI.ClipCursor(ref rect))
            // {
            //     var x = new Win32Exception(Marshal.GetLastWin32Error());
           //  }
-            this.MouseLeftButtonUp -= Overlay_MouseUpHandle;
+            this.MouseLeftButtonUp -= JButton_MouseUpHandle;
             var clientPos = (Point)Overlay.Instance.Dispatcher.Invoke(new ScreenToClient((pt) =>
             {
                 var clPos = Overlay.Instance.PointFromScreen(pt);

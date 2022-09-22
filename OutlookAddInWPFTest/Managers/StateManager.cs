@@ -11,13 +11,19 @@ namespace OutlookAddInWPFTest.Managers
     public static class StateManager
     {
         private static WinAPI.HookProc _cbtProc = CBTHook;
+        private static WinAPI.WinEventDelegate _winEventProc = winEvProc;
         private static IntPtr _cbtHook;
+        private static IntPtr _winEventHook;
         public static UIStateEnum UiState { get; set; }
         public static OutlookStateEnum OutlookState { get; set; }
 
         public static void Init()
         {
-            if ((_cbtHook = WinAPI.SetWindowsHookEx(WinAPI.HookType.WH_CBT, _cbtProc, IntPtr.Zero, WinAPI.GetCurrentThreadId())) == IntPtr.Zero)
+          //  if ((_cbtHook = WinAPI.SetWindowsHookEx(WinAPI.HookType.WH_CBT, _cbtProc, IntPtr.Zero, WinAPI.GetCurrentThreadId())) == IntPtr.Zero)
+         //   {
+          //      throw new Win32Exception(Marshal.GetLastWin32Error());
+           // }
+            if ((_winEventHook = WinAPI.SetWinEventHook(WinAPI.WinEvents.EVENT_SYSTEM_FOREGROUND, WinAPI.WinEvents.EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, _winEventProc, 0, 0, WinAPI.WinEventFlags.WINEVENT_OUTOFCONTEXT )) == IntPtr.Zero)
             {
                 throw new Win32Exception(Marshal.GetLastWin32Error());
             }
@@ -73,6 +79,30 @@ namespace OutlookAddInWPFTest.Managers
             }
 
             return WinAPI.CallNextHookEx(_cbtHook, nCode, wParam, lParam);
+        }
+
+        public static void winEvProc(IntPtr hWinEventHook, uint eventType,
+            IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
+        {
+            if (eventType != (uint)WinAPI.WinEvents.EVENT_SYSTEM_FOREGROUND)
+            {
+                return;
+            }
+            var outlookHwnd = OutlookUtils.GetOutlookWindow();
+            var wordHwnd = OutlookUtils.GetWordWindow();
+            if (JButton.Instance == null)
+            {
+                return;
+            }
+            var jButtonHwnd = new System.Windows.Interop.WindowInteropHelper(JButton.Instance).Handle;
+            if (hwnd == outlookHwnd || hwnd == wordHwnd || hwnd == jButtonHwnd || WinAPI.GetWindow(hwnd, WinAPI.GetWindowType.GW_OWNER) == outlookHwnd)
+            {
+                OutlookState = OutlookStateEnum.INBOX;
+            }
+            else
+            {
+                OutlookState = OutlookStateEnum.MINIMIZED;
+            }
         }
     }
 }

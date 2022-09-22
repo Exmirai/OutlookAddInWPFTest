@@ -30,7 +30,9 @@ namespace OutlookAddInWPFTest.Managers
             var wordHwnd = OutlookUtils.GetWordWindow();
             switch ((WinAPI.HCBT)nCode)
             {
-                case WinAPI.HCBT.MinMax:
+                case WinAPI.HCBT.Activate:
+                    break;
+                    case WinAPI.HCBT.MinMax:
                     if (wParam == outlookHwnd)
                     {
                         OutlookState = OutlookStateEnum.INBOX;

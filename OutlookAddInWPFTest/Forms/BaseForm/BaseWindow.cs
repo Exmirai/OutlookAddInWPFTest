@@ -30,16 +30,52 @@ namespace OutlookAddInWPFTest.Forms.BaseForm
                 return;
             }
 
-            switch (flags)
+            if ((flags & AttachFlagEnum.INSIDE) != 0)
             {
-                case AttachFlagEnum.OVERLAY:
+                if ((flags & AttachFlagEnum.LEFT) != 0)
+                {
                     this.Left = nativeRectangle.Left;
+                }
+                else if ((flags & AttachFlagEnum.RIGHT) != 0)
+                {
+                    this.Left = nativeRectangle.Right - this.Width;
+                }
+
+                if (flags.HasFlag(AttachFlagEnum.UP))
+                {
                     this.Top = nativeRectangle.Top;
-                    this.Width = nativeRectangle.Right - nativeRectangle.Left;
-                    this.Height = nativeRectangle.Bottom - nativeRectangle.Top;
-                    break;
-                default:
-                    break;
+
+                }
+                else if (flags.HasFlag(AttachFlagEnum.DOWN))
+                {
+                    this.Top = nativeRectangle.Bottom - this.Height;
+                }
+            }
+            else if (flags.HasFlag(AttachFlagEnum.OUTSIDE))
+            {
+                if (flags.HasFlag(AttachFlagEnum.LEFT))
+                {
+                    this.Left = nativeRectangle.Left - this.Width;
+                }
+                else if (flags.HasFlag(AttachFlagEnum.RIGHT))
+                {
+                    this.Left = nativeRectangle.Right;
+                }
+
+                if (flags.HasFlag(AttachFlagEnum.UP))
+                {
+                    this.Top = nativeRectangle.Top - this.Height;
+                }
+                else if (flags.HasFlag(AttachFlagEnum.DOWN))
+                {
+                    this.Top = nativeRectangle.Bottom;
+                }
+            }else if (flags.HasFlag(AttachFlagEnum.OVERLAY))
+            {
+                this.Left = nativeRectangle.Left;
+                this.Top = nativeRectangle.Top;
+                this.Width = nativeRectangle.Right - nativeRectangle.Left;
+                this.Height = nativeRectangle.Bottom - nativeRectangle.Top;
             }
         }
     }

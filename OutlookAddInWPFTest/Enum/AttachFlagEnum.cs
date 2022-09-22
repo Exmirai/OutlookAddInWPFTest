@@ -12,9 +12,9 @@ namespace OutlookAddInWPFTest.Enum
         LEFT = 0,
         RIGHT = 1,
         UP = 2,
-        DOWN = 3,
-        INSIDE = 4,
-        OUTSIDE = 5,
-        OVERLAY = 6,
+        DOWN = 4,
+        INSIDE = 8,
+        OUTSIDE = 16,
+        OVERLAY = 32,
     }
 }

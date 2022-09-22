@@ -14,7 +14,9 @@ namespace OutlookAddInWPFTest.Forms.BaseForm
 {
     public class BaseWindow : NativeHelpers.PerMonitorDPIWindow
     {
-        public delegate void AttachToD(IntPtr src, AttachFlagEnum flags);
+        public delegate Point ScreenToClient(Point src);
+
+
         public void AttachTo(Window src, AttachFlagEnum flags)
         {
 

@@ -14,8 +14,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using OutlookAddInWPFTest.Enum;
 using OutlookAddInWPFTest.Forms.BaseForm;
+using OutlookAddInWPFTest.Managers;
 using OutlookAddInWPFTest.Utils;
 
 namespace OutlookAddInWPFTest.Forms
@@ -25,35 +27,55 @@ namespace OutlookAddInWPFTest.Forms
     /// </summary>
     public partial class Overlay : BaseWindow
     {
+        public static Overlay Instance { get; private set; }
         private readonly Timer _overlayThinkTimer;
         public Overlay()
         {
             InitializeComponent();
             UpdateAlertList();
             _overlayThinkTimer = new Timer(new TimerCallback(OverlayThink), null, 0, 200);
+            Instance = this;
         }
 
         public void UpdateAlertList()
         {
-            var rect = new System.Windows.Shapes.Rectangle();
-            rect.Stroke = new SolidColorBrush(Colors.Black);
-            rect.StrokeThickness = 2;
-            rect.Fill = new SolidColorBrush(Colors.Black);
-            rect.Width = 60;
-            rect.Height = 30;
-            rect.Opacity = 0.5f;
-            rect.MouseEnter += (ev, ez) =>
+            ClearAlertList();
+            var alerts = AlertManager.GetAlerts();
+            foreach (var alert in alerts)
             {
-                var x = 1 + 1;
-            };
-            Canvas.SetLeft(rect, 0);
-            Canvas.SetTop(rect, 0);
-            RenderList.Children.Add(rect);
+                var rect = new System.Windows.Shapes.Rectangle();
+                rect.Stroke = new SolidColorBrush(Colors.Black);
+                rect.StrokeThickness = 2;
+                rect.Fill = new SolidColorBrush(Colors.Black);
+                rect.Width = alert.rect.Width;
+                rect.Height = alert.rect.Height;
+                rect.Opacity = 0.5;
+                rect.MouseEnter += (ev, ez) =>
+                {
+                    alert.ProcessHover();
+                    rect.Fill = new SolidColorBrush(Colors.Red);
+                };
+                rect.MouseLeave += (ev, ez) =>
+                {
+                    alert.ProcessHover();
+                    rect.Fill = new SolidColorBrush(Colors.Black);
+                };
+                rect.MouseLeftButtonUp += (ev, ez) =>
+                {
+                    alert.ProcessClick();
+                    rect.Fill = new SolidColorBrush(Colors.Yellow);
+                };
+                var pt = new Point(alert.rect.Left, alert.rect.Top);
+                pt = (Point)this.Dispatcher.Invoke(new ScreenToClient(this.PointFromScreen), DispatcherPriority.Normal, new[] { pt });
+                Canvas.SetLeft(rect, pt.X);
+                Canvas.SetTop(rect, pt.Y);
+                RenderList.Children.Add(rect);
+            }
         }
 
         public void ClearAlertList()
         {
-            RenderList.Children.Clear();
+            RenderList.Dispatcher.Invoke(() => RenderList.Children.Clear());
         }
 
 
@@ -67,6 +89,7 @@ namespace OutlookAddInWPFTest.Forms
                 }
                 return;
             }
+            UpdateAlertList();
             this.Dispatcher.Invoke(() => this.AttachTo(Utils.OutlookUtils.GetWordWindow(), AttachFlagEnum.OVERLAY));
             this.Dispatcher.Invoke(() => this.Show());
         }
@@ -74,13 +97,13 @@ namespace OutlookAddInWPFTest.Forms
         private void Overlay_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             var nativePoint = this.PointToScreen(e.GetPosition(this));
-            WinAPI.ClickMouseButton(OutlookUtils.GetOutlookWindow(), true,new WinAPI.POINT((int)nativePoint.X, (int)nativePoint.Y));
+            WinAPI.ClickMouseButton(OutlookUtils.GetWordWindow(), true,new WinAPI.POINT((int)nativePoint.X, (int)nativePoint.Y));
         }
 
         private void Overlay_OnMouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
             var nativePoint = this.PointToScreen(e.GetPosition(this));
-            WinAPI.ClickMouseButton(OutlookUtils.GetOutlookWindow(), false, new WinAPI.POINT((int)nativePoint.X, (int)nativePoint.Y));
+            WinAPI.ClickMouseButton(OutlookUtils.GetWordWindow(), false, new WinAPI.POINT((int)nativePoint.X, (int)nativePoint.Y));
         }
     }
 }

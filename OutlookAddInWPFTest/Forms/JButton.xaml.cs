@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,8 +17,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using OutlookAddInWPFTest.Enum;
 using OutlookAddInWPFTest.Forms.BaseForm;
+using OutlookAddInWPFTest.Properties;
+using OutlookAddInWPFTest.Utils;
+using SharpVectors.Dom.Events;
+using Point = System.Windows.Point;
 
 namespace OutlookAddInWPFTest.Forms
 {
@@ -24,7 +32,9 @@ namespace OutlookAddInWPFTest.Forms
     /// </summary>
     public partial class JButton : BaseWindow
     {
+        public static JButton Instance { get; set; }
         private readonly Timer _jbuttonThinkTimer;
+        private bool isMoving { get; set; }
         public JButton()
         {
             InitializeComponent();
@@ -46,16 +56,62 @@ namespace OutlookAddInWPFTest.Forms
                     var x = 1 + 1;
                 };
                 _jbuttonThinkTimer = new Timer(new TimerCallback(JButton_Think), null, 0, 200);
+                Instance = this;
             }
             catch (Exception ex)
             {
 
             }
         }
+
+        private void Window_BeforeMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                var rect = (WinAPI.RECT)Overlay.Instance.Dispatcher.Invoke(new GetClientRect(() =>
+                {
+                    return new WinAPI.RECT()
+                    {
+                        Top = (int)Overlay.Instance.Top,
+                        Left = (int)Overlay.Instance.Left,
+                        Bottom = (int)(Overlay.Instance.Top + Overlay.Instance.Height),
+                        Right = (int)(Overlay.Instance.Left + Overlay.Instance.Width),
+                    };
+                }));
+               // var res = WinAPI.ClipCursor(ref rect);
+            }
+        }
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
+            {
+                this.isMoving = true;
+                this.MouseLeftButtonUp += Overlay_MouseUpHandle;
                 DragMove();
+            }
+        }
+
+        private void Overlay_MouseUpHandle(object sender, EventArgs args)
+        {
+            var rect = new WinAPI.RECT();
+           // if (!WinAPI.ClipCursor(ref rect))
+           // {
+           //     var x = new Win32Exception(Marshal.GetLastWin32Error());
+          //  }
+            this.MouseLeftButtonUp -= Overlay_MouseUpHandle;
+            var clientPos = (Point)Overlay.Instance.Dispatcher.Invoke(new ScreenToClient((pt) =>
+            {
+                var clPos = Overlay.Instance.PointFromScreen(pt);
+                return new Point(Overlay.Instance.Width - clPos.X, Overlay.Instance.Height - clPos.Y);
+            }), DispatcherPriority.Normal, new Point(this.Left, this.Top));
+            if (!ValidateJButtonPosition(clientPos))
+            {
+                ResetJButtonPosition();
+            }
+
+            Properties.Settings.Default.JButtonPositionX = clientPos.X;
+            Properties.Settings.Default.JButtonPositionY = clientPos.Y;
+            isMoving = false;
         }
 
         private void JButton_Think(object obj)
@@ -68,8 +124,73 @@ namespace OutlookAddInWPFTest.Forms
                 }
                 return;
             }
-            this.Dispatcher.Invoke(() => this.AttachTo(Utils.OutlookUtils.GetWordWindow(), AttachFlagEnum.RIGHT | AttachFlagEnum.DOWN | AttachFlagEnum.INSIDE));
-            this.Dispatcher.Invoke(() => this.Show());
+
+            if (this.isMoving)
+            {
+                return;
+            }
+            this.Dispatcher.Invoke(() =>
+            {
+                if (System.Windows.Input.Mouse.LeftButton == MouseButtonState.Pressed)
+                {
+                    return;
+                }
+                var buttonPosition = new Point(Properties.Settings.Default.JButtonPositionX, Properties.Settings.Default.JButtonPositionY);
+                if (!ValidateJButtonPosition(buttonPosition))
+                {
+                    ResetJButtonPosition();
+                }
+                else
+                {
+                    SetJButtonPositionRelative(new Point(buttonPosition.X, buttonPosition.Y));
+                }
+
+                this.Show();
+            });
+        }
+
+        private bool ValidateJButtonPosition(Point position)
+        {
+            return (bool)Overlay.Instance.Dispatcher.Invoke(new CheckPosition((pos) =>
+            {
+                if (pos.X < 0.0f ||
+                    pos.Y < 0.0f ||
+                    pos.X > Overlay.Instance.Width ||
+                    pos.Y > Overlay.Instance.Height
+                   )
+                {
+                    return false;
+                }
+                return true;
+            }), DispatcherPriority.Normal, position);
+        }
+
+        private void ResetJButtonPosition()
+        {
+            this.AttachTo(Utils.OutlookUtils.GetWordWindow(),
+                AttachFlagEnum.RIGHT | AttachFlagEnum.DOWN | AttachFlagEnum.INSIDE);
+            var screenButtonPosition = new Point(this.Left, this.Top);
+            var overlayButtonPosition = (Point)this.Dispatcher.Invoke(
+                new ScreenToClient((scrPos) =>
+                {
+                    var clCoord = Overlay.Instance.PointFromScreen(scrPos);
+
+                    return new Point(Overlay.Instance.Width - clCoord.X, Overlay.Instance.Height - clCoord.Y);
+                }), DispatcherPriority.Normal, screenButtonPosition);
+            Properties.Settings.Default.JButtonPositionX = overlayButtonPosition.X;
+            Properties.Settings.Default.JButtonPositionY = overlayButtonPosition.Y;
+        }
+
+        private void SetJButtonPositionRelative(Point relativePosition)
+        {
+            Point nativePosition = new Point();
+            Overlay.Instance.Dispatcher.Invoke(() =>
+            {
+                var clientPosition = new Point(Overlay.Instance.Width - relativePosition.X, Overlay.Instance.Height - relativePosition.Y);
+                nativePosition = Overlay.Instance.PointToScreen(clientPosition);
+            });
+            this.Top = nativePosition.Y;
+            this.Left = nativePosition.X;
         }
     }
 }

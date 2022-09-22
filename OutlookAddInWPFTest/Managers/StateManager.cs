@@ -4,6 +4,7 @@ using OutlookAddInWPFTest.Enum;
 using OutlookAddInWPFTest.Utils;
 
 using System.Runtime.InteropServices;
+using OutlookAddInWPFTest.Forms;
 
 namespace OutlookAddInWPFTest.Managers
 {
@@ -28,27 +29,44 @@ namespace OutlookAddInWPFTest.Managers
         {
             var outlookHwnd = OutlookUtils.GetOutlookWindow();
             var wordHwnd = OutlookUtils.GetWordWindow();
+            if (JButton.Instance == null)
+            {
+                return WinAPI.CallNextHookEx(_cbtHook, nCode, wParam, lParam);
+            }
+            var jButtonHwnd = new System.Windows.Interop.WindowInteropHelper(JButton.Instance).Handle;
             switch ((WinAPI.HCBT)nCode)
             {
                 case WinAPI.HCBT.Activate:
-                    break;
-                    case WinAPI.HCBT.MinMax:
-                    if (wParam == outlookHwnd)
+                    if (wParam == outlookHwnd || wParam == wordHwnd || wParam == jButtonHwnd ||WinAPI.GetWindow(wParam, WinAPI.GetWindowType.GW_OWNER) == outlookHwnd)
                     {
+                        var payload =
+                            (WinAPI.CBTACTIVATESTRUCT)Marshal.PtrToStructure(lParam, typeof(WinAPI.CBTACTIVATESTRUCT));
                         OutlookState = OutlookStateEnum.INBOX;
                     }
                     else
                     {
                         OutlookState = OutlookStateEnum.MINIMIZED;
                     }
+
                     break;
-                case WinAPI.HCBT.MoveSize:
-                    if (wParam == outlookHwnd)
+                case WinAPI.HCBT.MinMax:
+                    var showWndCmd = (WinAPI.ShowWindowCommands)lParam;
+                    if (wParam == outlookHwnd || wParam == wordHwnd || wParam == jButtonHwnd || WinAPI.GetWindow(wParam, WinAPI.GetWindowType.GW_OWNER) == outlookHwnd)
                     {
-                        var x = 1 + 1;
+                       // OutlookState = OutlookStateEnum.INBOX;
+                    }
+                    else
+                    {
+                        //OutlookState = OutlookStateEnum.MINIMIZED;
                     }
                     break;
+                case WinAPI.HCBT.MoveSize:
+                    break;
                 case WinAPI.HCBT.SetFocus:
+                    if (wParam == wordHwnd)
+                    {
+                        //OutlookState = OutlookStateEnum.INBOX;
+                    }
                     break;
                 default:
                     break;

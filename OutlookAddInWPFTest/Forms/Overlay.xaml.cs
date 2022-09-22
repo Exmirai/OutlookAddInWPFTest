@@ -66,8 +66,7 @@ namespace OutlookAddInWPFTest.Forms
                     rect.Fill = new SolidColorBrush(Colors.Yellow);
                 };
                 var pt = new Point(alert.rect.Left, alert.rect.Top); 
-                var obj = this.Dispatcher.Invoke(new ScreenToClient(this.PointFromScreen), DispatcherPriority.Normal, pt);
-                pt = (Point)obj;
+                pt = (Point)this.Dispatcher.Invoke(new ScreenToClient(this.PointFromScreen), DispatcherPriority.Normal, pt);
                 Canvas.SetLeft(rect, pt.X);
                 Canvas.SetTop(rect, pt.Y);
                 RenderList.Children.Add(rect);

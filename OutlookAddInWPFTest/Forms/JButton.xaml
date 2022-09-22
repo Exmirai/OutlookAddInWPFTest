@@ -11,6 +11,7 @@
              AllowsTransparency="True"
              ResizeMode="NoResize"
              MouseDown="Window_MouseDown"
+             PreviewMouseDown="Window_BeforeMouseDown"
              Topmost="True"
              d:DesignHeight="46" d:DesignWidth="46">
     <Window.Background>

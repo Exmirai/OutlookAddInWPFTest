@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -9,12 +10,17 @@ using System.Windows;
 using System.Windows.Threading;
 using OutlookAddInWPFTest.Enum;
 using OutlookAddInWPFTest.Utils;
+using Point = System.Windows.Point;
 
 namespace OutlookAddInWPFTest.Forms.BaseForm
 {
     public class BaseWindow : NativeHelpers.PerMonitorDPIWindow
     {
         public delegate Point ScreenToClient(Point src);
+
+        public delegate bool CheckPosition(Point position);
+
+        public delegate WinAPI.RECT GetClientRect();
 
 
         public void AttachTo(Window src, AttachFlagEnum flags)

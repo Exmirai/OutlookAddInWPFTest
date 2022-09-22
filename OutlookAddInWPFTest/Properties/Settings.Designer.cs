@@ -22,5 +22,29 @@ namespace OutlookAddInWPFTest.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double JButtonPositionX {
+            get {
+                return ((double)(this["JButtonPositionX"]));
+            }
+            set {
+                this["JButtonPositionX"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double JButtonPositionY {
+            get {
+                return ((double)(this["JButtonPositionY"]));
+            }
+            set {
+                this["JButtonPositionY"] = value;
+            }
+        }
     }
 }

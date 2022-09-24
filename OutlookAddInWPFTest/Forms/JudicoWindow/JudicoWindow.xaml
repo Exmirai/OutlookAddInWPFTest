@@ -1,0 +1,22 @@
+﻿<baseForm:BaseWindow x:Class="OutlookAddInWPFTest.Forms.JudicoWindow.JudicoWindow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:OutlookAddInWPFTest.Forms.JudicoWindow"
+             xmlns:baseForm="clr-namespace:OutlookAddInWPFTest.Forms.BaseForm"
+             mc:Ignorable="d" 
+             Background="Transparent" 
+             WindowStyle="None"
+             ResizeMode="CanResize"
+             Width="356"
+             Height="472"
+             d:DesignHeight="472" d:DesignWidth="356">
+    <WindowChrome.WindowChrome>
+        <WindowChrome 
+            CaptionHeight="0"
+            ResizeBorderThickness="5" />
+    </WindowChrome.WindowChrome>
+    <Grid x:Name="ContentGrid">
+    </Grid>
+</baseForm:BaseWindow>

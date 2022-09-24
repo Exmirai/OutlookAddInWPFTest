@@ -5,12 +5,14 @@ using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -26,6 +28,7 @@ using SharpVectors.Dom.Events;
 using Application = System.Windows.Application;
 using Exception = System.Exception;
 using Point = System.Windows.Point;
+using Timer = System.Threading.Timer;
 
 namespace OutlookAddInWPFTest.Forms
 {
@@ -37,6 +40,8 @@ namespace OutlookAddInWPFTest.Forms
         public static JButton Instance { get; set; }
         private readonly Timer _jbuttonThinkTimer;
         private bool isMoving { get; set; }
+        private bool wasMovedDuringMouseDown { get; set; }
+        private DateTime _lastMouseDownTime = DateTime.MinValue;
         public JButton()
         {
             InitializeComponent();
@@ -83,18 +88,25 @@ namespace OutlookAddInWPFTest.Forms
                // var res = WinAPI.ClipCursor(ref rect);
             }
         }
+
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            //_lastMouseDownTime = DateTime.Now;
+            this.MouseLeftButtonUp += JButton_MouseUpHandle;
             if (e.ChangedButton == MouseButton.Left)
             {
-                this.isMoving = true;
-                this.MouseLeftButtonUp += JButton_MouseUpHandle;
+                isMoving = true;
+                wasMovedDuringMouseDown = false;
                 DragMove();
             }
         }
 
         private void JButton_LocationChanged(object sender, EventArgs e)
         {
+            if (isMoving)
+            {
+                wasMovedDuringMouseDown = true;
+            }
             var overlayRect = new System.Drawing.Rectangle();
             Overlay.Instance.Dispatcher.Invoke(() =>
             {
@@ -120,12 +132,13 @@ namespace OutlookAddInWPFTest.Forms
 
         private void JButton_MouseUpHandle(object sender, EventArgs args)
         {
-            var rect = new WinAPI.RECT();
-           // if (!WinAPI.ClipCursor(ref rect))
-           // {
-           //     var x = new Win32Exception(Marshal.GetLastWin32Error());
-          //  }
             this.MouseLeftButtonUp -= JButton_MouseUpHandle;
+            if (!wasMovedDuringMouseDown) // Click Event
+            {
+                JButton_ClickEvent();
+                return;
+            }
+            var rect = new WinAPI.RECT();////Move event
             var clientPos = (Point)Overlay.Instance.Dispatcher.Invoke(new ScreenToClient((pt) =>
             {
                 var clPos = Overlay.Instance.PointFromScreen(pt);
@@ -139,6 +152,11 @@ namespace OutlookAddInWPFTest.Forms
             Properties.Settings.Default.JButtonPositionX = clientPos.X;
             Properties.Settings.Default.JButtonPositionY = clientPos.Y;
             isMoving = false;
+        }
+
+        private void JButton_ClickEvent()
+        {
+            JudicoWindow.JudicoWindow.Instance.ToggleWindow();
         }
 
         private void JButton_Think(object obj)

@@ -188,6 +188,12 @@
     <Compile Include="Forms\JButton.xaml.cs">
       <DependentUpon>JButton.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Forms\JudicoWindow\JudicoWindow.xaml.cs">
+      <DependentUpon>JudicoWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\JudicoWindow\LoginWnd\LoginContent.xaml.cs">
+      <DependentUpon>LoginContent.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Forms\Overlay.xaml.cs">
       <DependentUpon>Overlay.xaml</DependentUpon>
     </Compile>
@@ -252,6 +258,14 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="Forms\JButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\JudicoWindow\JudicoWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\JudicoWindow\LoginWnd\LoginContent.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -22,6 +22,7 @@ namespace OutlookAddInWPFTest
             {
                 new Forms.JButton().Show();
                 new Forms.Overlay().Show();
+                new Forms.JudicoWindow.JudicoWindow();
             }
         }
 

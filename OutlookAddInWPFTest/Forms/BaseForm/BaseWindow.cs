@@ -25,7 +25,12 @@ namespace OutlookAddInWPFTest.Forms.BaseForm
 
         public void AttachTo(Window src, AttachFlagEnum flags)
         {
-
+            RectangleF rect = new Rectangle();
+            src.Dispatcher.Invoke(() =>
+            {
+                rect = new RectangleF((float)src.Left, (float)src.Top, (float)src.Width, (float)src.Height);
+            });
+            AttachToCoords(rect, flags);
         }
         public void AttachTo(IntPtr src, AttachFlagEnum flags)
         {
@@ -36,52 +41,58 @@ namespace OutlookAddInWPFTest.Forms.BaseForm
                 return;
             }
 
+            AttachToCoords(new Rectangle(nativeRectangle.Left, nativeRectangle.Top, nativeRectangle.Right - nativeRectangle.Left, nativeRectangle.Bottom - nativeRectangle.Top), flags);
+        }
+
+        private void AttachToCoords(RectangleF rect, AttachFlagEnum flags)
+        {
             if ((flags & AttachFlagEnum.INSIDE) != 0)
             {
                 if ((flags & AttachFlagEnum.LEFT) != 0)
                 {
-                    this.Left = nativeRectangle.Left;
+                    this.Left = rect.Left;
                 }
                 else if ((flags & AttachFlagEnum.RIGHT) != 0)
                 {
-                    this.Left = nativeRectangle.Right - this.Width;
+                    this.Left = rect.Right - this.Width;
                 }
 
                 if (flags.HasFlag(AttachFlagEnum.UP))
                 {
-                    this.Top = nativeRectangle.Top;
+                    this.Top = rect.Top;
 
                 }
                 else if (flags.HasFlag(AttachFlagEnum.DOWN))
                 {
-                    this.Top = nativeRectangle.Bottom - this.Height;
+                    this.Top = rect.Bottom - this.Height;
                 }
             }
             else if (flags.HasFlag(AttachFlagEnum.OUTSIDE))
             {
                 if (flags.HasFlag(AttachFlagEnum.LEFT))
                 {
-                    this.Left = nativeRectangle.Left - this.Width;
+                    this.Left = rect.Left - this.Width;
                 }
                 else if (flags.HasFlag(AttachFlagEnum.RIGHT))
                 {
-                    this.Left = nativeRectangle.Right;
+                    this.Left = rect.Right;
                 }
 
                 if (flags.HasFlag(AttachFlagEnum.UP))
                 {
-                    this.Top = nativeRectangle.Top - this.Height;
+                    this.Top = rect.Top - this.Height;
                 }
                 else if (flags.HasFlag(AttachFlagEnum.DOWN))
                 {
-                    this.Top = nativeRectangle.Bottom;
+                    this.Top = rect.Bottom;
                 }
-            }else if (flags.HasFlag(AttachFlagEnum.OVERLAY))
+            }
+            else if (flags.HasFlag(AttachFlagEnum.OVERLAY))
             {
-                this.Left = nativeRectangle.Left;
-                this.Top = nativeRectangle.Top;
-                this.Width = nativeRectangle.Right - nativeRectangle.Left;
-                this.Height = nativeRectangle.Bottom - nativeRectangle.Top;
+                this.Left = rect.Left;
+                this.Top = rect.Top;
+                this.Width = rect.Right - rect.Left;
+                this.Height = rect.Bottom - rect.Top;
             }
         }
     }

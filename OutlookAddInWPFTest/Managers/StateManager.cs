@@ -5,6 +5,7 @@ using OutlookAddInWPFTest.Utils;
 
 using System.Runtime.InteropServices;
 using OutlookAddInWPFTest.Forms;
+using OutlookAddInWPFTest.Forms.JudicoWindow;
 
 namespace OutlookAddInWPFTest.Managers
 {
@@ -90,13 +91,18 @@ namespace OutlookAddInWPFTest.Managers
             }
             var outlookHwnd = OutlookUtils.GetOutlookWindow();
             var wordHwnd = OutlookUtils.GetWordWindow();
-            if (JButton.Instance == null || Overlay.Instance == null)
+            if (JButton.Instance == null || Overlay.Instance == null || JudicoWindow.Instance == null)
             {
                 return;
             }
             var jButtonHwnd = new System.Windows.Interop.WindowInteropHelper(JButton.Instance).Handle;
             var overlayHwnd = new System.Windows.Interop.WindowInteropHelper(Overlay.Instance).Handle;
-            if (hwnd == outlookHwnd || hwnd == wordHwnd || hwnd == jButtonHwnd || hwnd == overlayHwnd || WinAPI.GetWindow(hwnd, WinAPI.GetWindowType.GW_OWNER) == outlookHwnd || WinAPI.GetWindow(hwnd, WinAPI.GetWindowType.GW_OWNER) == wordHwnd)
+            var jWindowHwnd = new System.Windows.Interop.WindowInteropHelper(JudicoWindow.Instance).Handle;
+            if (hwnd == outlookHwnd || 
+                hwnd == wordHwnd || 
+                hwnd == jButtonHwnd || 
+                hwnd == jWindowHwnd ||
+                hwnd == overlayHwnd /* || WinAPI.GetWindow(hwnd, WinAPI.GetWindowType.GW_OWNER) == outlookHwnd || WinAPI.GetWindow(hwnd, WinAPI.GetWindowType.GW_OWNER) == wordHwnd*/)
             {
                 OutlookState = OutlookStateEnum.INBOX;
             }
